@@ -50,7 +50,8 @@
 #        vg_name: sysvg
 #        container_command: apt-get update; apt-get install python
 
-import lxc
+
+    
 from ansible.module_utils.basic import *
 
 class LilikContainer(object):
@@ -58,7 +59,6 @@ class LilikContainer(object):
     A generic lxc container manipulation object based on python-lxc
     """
     def __init__(self, module):
-        self.module = module
         self.state = module.params['state']
         self.name = module.params['name']
         self.template = module.params['template']
@@ -67,11 +67,11 @@ class LilikContainer(object):
         self.vgname = module.params['vg_name']
         self.fstype = module.params['fs_type']
         self.fssize = module.params['fssize']
-        
 
     def create_container(self):
         """
-        Create a lxc.Container object and returns it
+            Create a lxc.Container object as specified in the playbook, use it
+            to create a lxc container and returns the reference 
         """
         container_options = {
            'bdev': self.backing_store,
@@ -88,12 +88,9 @@ class LilikContainer(object):
                     args = container_options,
                     bdevtype=self.backing_store
                )
-                                 
-    def destroy_container(self):
-        pass
-                                   
 
 def main():
+
     module = AnsibleModule(
         argument_spec = dict(
             backing_store = dict(
@@ -101,7 +98,6 @@ def main():
                                 choices=['dir', 'lvm', 'loop', 'btrsf', 'overlayfs', 'zfs', type='str'],
             ),
             container_command = dict(
-                                    required=False,
                                     type='str',
             ),
             fs_size = dict(
@@ -115,7 +111,6 @@ def main():
                         type='str',
             ),
             lv_name = dict(
-                        required=False,
                         type='str',
             ),
             name = dict(
@@ -141,6 +136,11 @@ def main():
         )
     )
 
+    try:
+        import lxc
+    except ImportError:
+        module.fail_json(changed=False, msg='liblxc is required for this module to work')
+
     container = LilikContainer(module)
 
     result = {}
@@ -148,7 +148,12 @@ def main():
     result['state'] = container.state
 
     if container.state == 'absent':
-
+        
+        # destroy the container
+        if container.destoy():
+            module.exit_json(changed=True)
+        
+        # TODO: remove redundant test
         # test wether the container is absent or not
         if container.name in lxc.list_containers():
             module.fail_json(changed=False)
@@ -156,11 +161,29 @@ def main():
         # the container has been removed
         else:
             module.exit_json(changed=True)
+        # end TODO: remove redundant test
 
     elif container.state in ['started', 'stopped', 'restarted', 'frozen']:
-        
+
+        # the container exists, just set the state as required       
         if container.name in lxc.list_containers():
-            module.exit_json(changed=True)
+
+            container_actions_from_state = {
+                'started': container.start,
+                'stopped': container.stop,
+                'restarted': container.restart,
+                'frozen': container.freeze,
+            }
+            
+            # selected action
+            action = container_actions.get(container.state)
+
+            if action():
+                module.exit_json(changed=True)
+            else:
+                module.exit_json(changed=False)
+
+        # the container does not exists, create it
         else:
             try:
                 new_container = container.create_container()
@@ -168,13 +191,8 @@ def main():
             except Exception:
                 module.fail_json(
                         changed=False,
-                        msg='An excption was raised when creating the container'
+                        msg='An excption was raised while creating the container'
                 )
-            
-
-#    container.name not in lxc.list_containers():
-#        module.fail_json(changed=False)
-
 
 if __name__ == '__main__':
     main()
