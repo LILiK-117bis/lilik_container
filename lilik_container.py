@@ -25,6 +25,11 @@ options:
 	  - Backend storage type for the container.
         required: false
         default: lvm
+    config:
+        description:
+          - Path to the LXC configuration file
+        required: false
+        default: /etc/lxc/default.conf
     template:
         description:
           - Name of the template to use within an LXC create.
