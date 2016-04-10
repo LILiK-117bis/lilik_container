@@ -48,7 +48,7 @@ options:
     vg_name:
        description:
          - If Backend store is lvm, specify the name of the volume group.
-       default: sysvg
+       default: newsysvg
        required: false
     fs_type:
        description:
@@ -177,7 +177,7 @@ def main():
             template_options = dict(required=False),
             vg_name = dict(
                         required=False,
-                        default='sysvf',
+                        default='newsysvg',
                         type='str',
             ),
         )
