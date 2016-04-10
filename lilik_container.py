@@ -1,25 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# our playbook
-#---
-#- hosts: mcfly
-#  remote_user: root
-#  tasks:
-#    - name: create a lxc container
-#      lxc_container:
-#        name: gogs
-#        backing_store: lvm
-#        container_log: true
-#        fs_size: 5G
-#        fs_type: ext4
-#        lv_name: vm_gogs
-#        state: started
-#        template: debian
-#        template_options: --release jessie
-#        vg_name: sysvg
-#        container_command: apt-get update; apt-get install python
-
 DOCUMENTATION = """
 ---
 module: lilik_container
@@ -196,21 +177,21 @@ def main():
     except ImportError:
         module.fail_json(changed=False, msg='liblxc is required for this module to work')
 
-    container = LilikContainer(module)
+    lilik_container = LilikContainer(module)
 
     result = {}
-    result['name'] = container.name
-    result['state'] = container.state
+    result['name'] = lilik_container.name
+    result['state'] = lilik_container.state
 
-    if container.state == 'absent':
+    if lilik_container.state == 'absent':
         
         # destroy the container
-        if container.destoy():
+        if lilik_container.destoy():
             module.exit_json(changed=True)
         
         # TODO: remove redundant test
         # test wether the container is absent or not
-        if container.name in lxc.list_containers():
+        if lilik_container.name in lxc.list_containers():
             module.fail_json(changed=False)
 
         # the container has been removed
@@ -218,16 +199,16 @@ def main():
             module.exit_json(changed=True)
         # end TODO: remove redundant test
 
-    elif container.state in ['started', 'stopped', 'restarted', 'frozen']:
+    elif lilik_container.state in ['started', 'stopped', 'restarted', 'frozen']:
 
         # the container exists, just set the state as required       
-        if container.name in lxc.list_containers():
+        if lilik_container.name in lxc.list_containers():
 
             container_actions_from_state = {
-                'started': container.start,
-                'stopped': container.stop,
-                'restarted': container.restart,
-                'frozen': container.freeze,
+                'started': lilik_container.start,
+                'stopped': lilik_container.stop,
+                'restarted': lilik_container.restart,
+                'frozen': lilik_container.freeze,
             }
             
             # selected action
@@ -241,7 +222,7 @@ def main():
         # the container does not exists, create it
         else:
             try:
-                new_container = container.create_container()
+                new_container = lilik_container.create_container()
                 module.exit_json(changed=True)
             except Exception as e:
                 module.fail_json(
