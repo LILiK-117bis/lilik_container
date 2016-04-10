@@ -43,25 +43,26 @@ options:
         description
 	  - Backend storage type for the container.
         required: false
-        default: dir
+        default: lvm
     template:
         description:
           - Name of the template to use within an LXC create.
         required: false
-        default: ubuntu
+        default: debian
     template_options:
        description:
           - Template options when building the container.
        required: false
+       default: --release jessie
     lv_name:
         description:
           - Name of the logical volume, defaults to the container name.
-        default: $CONTAINER_NAME
+        default: "vm_{{$CONTAINER_NAME}}"
         required: false
     vg_name:
        description:
          - If Backend store is lvm, specify the name of the volume group.
-       default: lxc
+       default: sysvg
        required: false
     fs_type:
        description:
@@ -77,6 +78,7 @@ options:
        description:
         - Run a command within a container.
        required: false
+       default: apt-get update; apt-get install python
     state:
        choices:
         - started
@@ -85,7 +87,8 @@ options:
         - absent
         - frozen
       description:
-        - Define the state of a container.                                                                 required: false
+        - Define the state of a container.
+      required: false
       default: started
 requirements:
   - 'liblxc1 >= 1.1.5 # OS package'
@@ -143,12 +146,13 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             backing_store = dict(
-                                default='dir',
+                                default='lvm',
                                 choices=['dir', 'lvm', 'loop', 'btrsf', 'overlayfs', 'zfs',],
                                 type='str',
             ),
             container_command = dict(
                                     type='str',
+                                    default='apt-get update; apt-get install python',
             ),
             fs_size = dict(
                         required=False,
@@ -174,13 +178,13 @@ def main():
             ),
             template = dict(
                         required=False,
-                        default='ubuntu',
+                        default='debian',
                         type='str',
             ),
             template_options = dict(required=False),
             vg_name = dict(
                         required=False,
-                        default='lxc',
+                        default='sysvf',
                         type='str',
             ),
         )
