@@ -132,6 +132,10 @@ def main():
                                 choices=['dir', 'lvm', 'loop', 'btrsf', 'overlayfs', 'zfs',],
                                 type='str',
             ),
+            config = dict(
+                        required=False,
+                        default='/etc/lxc/default.conf',
+            ),
             container_command = dict(
                                     type='str',
                                     default='apt-get update; apt-get install python',
