@@ -94,6 +94,7 @@ class LilikContainer(object):
         self.state = module.params['state']
         self.name = module.params['name']
         self.template = module.params['template']
+        self.config = module.params['config']
         self.backing_store = module.params['backing_store']
         # handle default name
         self.lvname = module.params.get('lv_name', 'vm_%s' % module.params['name'])
@@ -108,6 +109,7 @@ class LilikContainer(object):
         """
         container_options = {
            'bdev': self.backing_store,
+           'config': self.config,
            'lvname': self.lvname,
            'vgname': self.vgname,
            'fstype': self.fstype,
