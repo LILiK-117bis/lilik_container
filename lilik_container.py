@@ -1,37 +1,7 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-
-# rewrite of the create_container playbook in Python; this happens because
-# the module for LXC container shipped with ansible is not working right now
-#import lxc
-
-# liliks infrastructure
-#container_name = "gogs"
-#logical_volume_name = "vm_gogs"
-#lvm_volume_group = "sysvg"
-#filesystem_size = "5G"
-
-# lilik preferred distro
-#distro = "debian"
-#release = "jessie"
-
-# our host
-#backing_store = "lvm"
-#filesystem_type = "ext4"
-#
-#
-#lxc_create_options = {
-#    "release": release,
-#    "name": container_name,
-#    "lvname": logical_volume_name,
-#    "vgname": lvm_volume_group,
-#    "fstype": filesystem_type,
-#    "fssize": filesystem_size,
-#}
-#
-#container = lxc.Container(container_name)
-#container.create(distro, args=lxc_create_options)
-#container.start()
-
+# our playbook
 #---
 #- hosts: mcfly
 #  remote_user: root
@@ -50,6 +20,78 @@
 #        vg_name: sysvg
 #        container_command: apt-get update; apt-get install python
 
+DOCUMENTATION = """
+---
+module: lilik_container
+short_description: Manage LXC Containers - Lilik style
+version_added: 2.1.0
+description:
+  - Management of LXC containers
+options:
+    name:
+        description:
+	  - Name of a container
+        required: true
+    backing_store:
+        choices:
+          - dir
+          - lvm
+          - loop
+          - btrfs
+          - overlayfs
+          - zfs
+        description
+	  - Backend storage type for the container.
+        required: false
+        default: dir
+    template:
+        description:
+          - Name of the template to use within an LXC create.
+        required: false
+        default: ubuntu
+    template_options:
+       description:
+          - Template options when building the container.
+       required: false
+    lv_name:
+        description:
+          - Name of the logical volume, defaults to the container name.
+        default: $CONTAINER_NAME
+        required: false
+    vg_name:
+       description:
+         - If Backend store is lvm, specify the name of the volume group.
+       default: lxc
+       required: false
+    fs_type:
+       description:
+         - Create fstype TYPE.
+       default: ext4
+       required: false
+    fs_size:
+       description:
+         - File system Size.
+       default: 5G
+       required: false
+    container_command:
+       description:
+        - Run a command within a container.
+       required: false
+    state:
+       choices:
+        - started
+        - stopped
+        - restarted
+        - absent
+        - frozen
+      description:
+        - Define the state of a container.                                                                 required: false
+      default: started
+requirements:
+  - 'liblxc1 >= 1.1.5 # OS package'
+  - 'python >= 2.6 # OS package'
+  - 'lxc-python2 >= 0.1 #PIP package from https://github.com/lxc/python2-lxc'                       
+"""
 
     
 from ansible.module_utils.basic import *
