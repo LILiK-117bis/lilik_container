@@ -64,7 +64,6 @@ options:
        description:
         - Run a command within a container.
        required: false
-       default: apt-get update; apt-get install python
     state:
        choices:
         - started
@@ -145,8 +144,9 @@ def main():
                         default='/etc/lxc/default.conf',
             ),
             container_command = dict(
-                                    type='str',
-                                    default='apt-get update; apt-get install python',
+			required=False,
+			type='str',
+			default='',
             ),
             fs_size = dict(
                         required=False,
