@@ -162,8 +162,8 @@ def main():
                         type='str',
             ),
             name = dict(
-                    required=True,
-                    type='str',
+                        required=True,
+                        type='str',
             ),
             state = dict(
                         default='started',
