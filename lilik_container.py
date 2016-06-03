@@ -39,7 +39,7 @@ options:
        description:
           - Template options when building the container.
        required: false
-       default: --release jessie
+       default: --release jessie --packages=ssh,python
     lv_name:
         description:
           - Name of the logical volume, defaults to the container name.
@@ -94,6 +94,7 @@ class LilikContainer(object):
         self.state = module.params['state']
         self.name = module.params['name']
         self.template = module.params['template']
+	self.template_options = module.params['template_options']
         self.config = module.params['config']
         self.backing_store = module.params['backing_store']
         # handle default name
@@ -174,7 +175,11 @@ def main():
                         default='debian',
                         type='str',
             ),
-            template_options = dict(required=False),
+            template_options = dict(
+                        required=False,
+                        default='--release jessie --packages=ssh,python',
+                        type='str',
+            ),
             vg_name = dict(
                         required=False,
                         default='newsysvg',
